@@ -1,48 +1,60 @@
-function deepCopy(object) {
-  return JSON.parse(JSON.stringify(object));
+export function addNumberToArrayAt(array, number, index) {
+  let firstSlice = array.slice(0, index);
+  let secondSlice = array.slice(index + 1);
+  return firstSlice.concat([array[index] + number], secondSlice);
 }
 
-function recordState(state) {
-  let newState = deepCopy(state);
-  newState.step++;
-  newState.stateHistory[newState.step] = {
-    counterArray: newState.counterArray,
-    totalClicks: newState.totalClicks
-  };
-  newState.stateHistory.length = newState.step + 1;
-  return newState;
+export function recordState(stateHistory, subState, step) {
+  let stateHistorySlice = stateHistory.slice(0, step);
+  return stateHistorySlice.concat(subState);
+}
+
+export function removeElementAt(array, index) {
+  let firstSlice = array.slice(0, index);
+  let secondSlice = array.slice(index + 1);
+  return firstSlice.concat(secondSlice);
 }
 
 export default (state, action) => {
-  let newState = deepCopy(state);
+  let newState = {};
+  let subState = {};
   switch (action.type) {
     case 'INCREMENT':
-      newState.counterArray[action.index]++;
-      newState.totalClicks++;
-      newState = recordState(newState);
+      subState.counterArray = newState.counterArray = addNumberToArrayAt(state.counterArray, 1, action.index);
+      subState.totalClicks = newState.totalClicks = state.totalClicks + 1;
+      newState.step = state.step + 1;
+      newState.stateHistory = recordState(state.stateHistory, subState, newState.step);
+      console.log(newState.stateHistory.length);
       return newState;
     case 'DECREMENT':
-      newState.counterArray[action.index]--;
-      newState.totalClicks++;
-      newState = recordState(newState);
+      subState.counterArray = newState.counterArray = addNumberToArrayAt(state.counterArray, -1, action.index);
+      subState.totalClicks = newState.totalClicks = state.totalClicks + 1;
+      newState.step = state.step + 1;
+      newState.stateHistory = recordState(state.stateHistory, subState, newState.step);
       return newState;
     case 'ADD_COUNTER':
-      newState.counterArray.push(0);
-      newState = recordState(newState);
+      subState.counterArray = newState.counterArray = state.counterArray.concat(0);
+      subState.totalClicks = newState.totalClicks = state.totalClicks;
+      newState.step = state.step + 1;
+      newState.stateHistory = recordState(state.stateHistory, subState, newState.step);
       return newState;
     case 'REMOVE_COUNTER':
-      newState.counterArray.splice(action.index, 1);
-      newState = recordState(newState);
+      subState.counterArray = newState.counterArray = removeElementAt(state.counterArray, action.index);
+      subState.totalClicks = newState.totalClicks = state.totalClicks;
+      newState.step = state.step + 1;
+      newState.stateHistory = recordState(state.stateHistory, subState, newState.step);
       return newState;
     case 'UNDO':
-      newState.step--;
-      newState.counterArray = newState.stateHistory[newState.step].counterArray;
-      newState.totalClicks = newState.stateHistory[newState.step].totalClicks;
+      newState.step = state.step - 1;
+      newState.counterArray = state.stateHistory[newState.step].counterArray;
+      newState.totalClicks = state.stateHistory[newState.step].totalClicks;
+      newState.stateHistory = state.stateHistory;
       return newState;
     case 'REDO':
-      newState.step++;
-      newState.counterArray = newState.stateHistory[newState.step].counterArray;
-      newState.totalClicks = newState.stateHistory[newState.step].totalClicks;
+      newState.step = state.step + 1;
+      newState.counterArray = state.stateHistory[newState.step].counterArray;
+      newState.totalClicks = state.stateHistory[newState.step].totalClicks;
+      newState.stateHistory = state.stateHistory;
       return newState;
     default:
       return state;

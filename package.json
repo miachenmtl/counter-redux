@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.1.2",
     "react-scripts": "0.7.0"
   },
   "dependencies": {
@@ -15,7 +17,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
+    "test": "./node_modules/.bin/mocha --compilers js:babel-core/register --reporter spec",
     "eject": "react-scripts eject"
   }
 }
